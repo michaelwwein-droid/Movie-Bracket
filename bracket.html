@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Movie Madness Bracket Fixed</title>
+<title>Movie Madness Bracket</title>
 <style>
   body { font-family: Arial, sans-serif; background:#f4f4f4; padding:20px; }
-  h1 { text-align:center; }
+  h1, h2 { text-align:center; }
   .bracket { display:flex; flex-wrap:wrap; justify-content:center; }
   .region { margin:10px; }
   .matchup { background:#fff; border:1px solid #ccc; margin:5px; padding:5px; width:220px; text-align:center; }
@@ -56,25 +56,31 @@ let regions = {
 
 // ------------------- STATE -------------------
 let currentRegions = JSON.parse(JSON.stringify(regions)); // deep copy
+let nextRoundRegions = {};
 let roundNumber = 1;
 
 // ------------------- RENDER FUNCTION -------------------
 function renderBracket() {
   const container = document.getElementById("bracket");
   container.innerHTML = "";
+  
   for (let regionName in currentRegions){
     const regionDiv = document.createElement("div");
     regionDiv.className = "region";
     regionDiv.innerHTML = `<h2>${regionName}</h2>`;
     
-    currentRegions[regionName].forEach((matchup,index)=>{
+    currentRegions[regionName].forEach((matchup, i) => {
       const div = document.createElement("div");
       div.className = "matchup";
-      div.innerHTML = matchup.map((movie,i)=>`
-        <button onclick="selectWinner('${regionName}',${index},${i})">
-          <span class="seed">(${movie.seed})</span>${movie.name}
-        </button>
-      `).join('<br>');
+      
+      // show both movies as buttons
+      matchup.forEach((movie, idx) => {
+        const btn = document.createElement("button");
+        btn.innerHTML = `<span class="seed">(${movie.seed})</span>${movie.name}`;
+        btn.onclick = () => selectWinner(regionName, i, idx);
+        div.appendChild(btn);
+        div.appendChild(document.createElement("br"));
+      });
       regionDiv.appendChild(div);
     });
     
@@ -83,49 +89,53 @@ function renderBracket() {
 }
 
 // ------------------- WINNER FUNCTION -------------------
-function selectWinner(region,index,winnerIndex){
-  const winner = currentRegions[region][index][winnerIndex];
+function selectWinner(regionName, matchupIndex, winnerIndex){
+  const winner = currentRegions[regionName][matchupIndex][winnerIndex];
   
-  // Prepare next round
-  if(!currentRegions[region+"_next"]) currentRegions[region+"_next"]=[];
-  currentRegions[region+"_next"].push(winner);
+  // Store winner in next round
+  if(!nextRoundRegions[regionName]) nextRoundRegions[regionName] = [];
+  nextRoundRegions[regionName].push(winner);
   
-  // Remove the entire matchup after selection
-  currentRegions[region][index] = null;
+  // Remove the selected matchup entirely
+  currentRegions[regionName][matchupIndex] = null;
   
-  // Check if all matchups are done in the round
-  let done = currentRegions[region].every(m => m === null);
-  if(done){
+  // Check if all matchups are done in the current round
+  let allDone = currentRegions[regionName].every(m => m===null);
+  
+  if(allDone){
     // Build next round
-    let nextRound=[];
-    for(let i=0;i<currentRegions[region+"_next"].length;i+=2){
-      if(currentRegions[region+"_next"][i+1])
-        nextRound.push([currentRegions[region+"_next"][i],currentRegions[region+"_next"][i+1]]);
+    let nextRound = [];
+    for(let i=0;i<nextRoundRegions[regionName].length;i+=2){
+      if(nextRoundRegions[regionName][i+1])
+        nextRound.push([nextRoundRegions[regionName][i], nextRoundRegions[regionName][i+1]]);
     }
-    currentRegions[region] = nextRound;
-    currentRegions[region+"_next"]=[];
+    currentRegions[regionName] = nextRound;
+    nextRoundRegions[regionName] = [];
   }
   
-  // Check if all regions are down to 1 matchup → final
-  let totalMatchups=0;
+  // Check if only one matchup left overall → finals
+  let totalMatchups = 0;
   for(let r in currentRegions){
-    if(!r.endsWith("_next"))
-      totalMatchups+=currentRegions[r].length;
+    totalMatchups += currentRegions[r].length;
   }
-  if(totalMatchups===1){
-    // Final round
-    let finalRegion = Object.keys(currentRegions).find(r=>currentRegions[r].length>0 && !r.endsWith("_next"));
+  
+  if(totalMatchups === 1){
+    // Final
+    const finalRegion = Object.keys(currentRegions).find(r=>currentRegions[r].length>0);
     const finalMatch = currentRegions[finalRegion][0];
-    document.getElementById("bracket").innerHTML="<h2>Final Round</h2>";
+    
+    const container = document.getElementById("bracket");
+    container.innerHTML = "<h2>Final Round</h2>";
+    
     finalMatch.forEach(m=>{
       const btn = document.createElement("button");
-      btn.innerHTML=`<span class="seed">(${m.seed})</span>${m.name}`;
-      btn.onclick = () => {
-        document.getElementById("bracket").innerHTML=`<h1>🏆 Champion: ${m.name}</h1>`;
-      };
-      document.getElementById("bracket").appendChild(btn);
+      btn.innerHTML = `<span class="seed">(${m.seed})</span>${m.name}`;
+      btn.onclick = ()=> container.innerHTML = `<h1>🏆 Champion: ${m.name}</h1>`;
+      container.appendChild(btn);
+      container.appendChild(document.createElement("br"));
     });
   } else {
+    // Render updated bracket
     renderBracket();
   }
 }
