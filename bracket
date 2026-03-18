@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Movie Madness Bracket</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; }
+  h1 { text-align:center; }
+  .bracket { display: flex; justify-content: center; overflow-x: auto; }
+  .round { display: flex; flex-direction: column; margin: 0 10px; }
+  .matchup { margin: 10px 0; text-align:center; }
+  .matchup button { display:block; width:160px; margin:2px 0; padding:5px; }
+  .seed { font-weight:bold; margin-right:5px; color:#555; }
+  .champion { font-size: 1.5em; color: darkgreen; text-align:center; margin-top:20px; }
+</style>
+</head>
+<body>
+
+<h1>Movie Madness Bracket</h1>
+<div class="bracket" id="bracket"></div>
+<div id="champion" class="champion"></div>
+
+<script>
+// Movie list (64 movies with seeds)
+const initialMovies = [
+  {seed:1,name:"The Godfather"},{seed:16,name:"Groundhog Day"},
+  {seed:8,name:"Dr. Strangelove"},{seed:9,name:"The Truman Show"},
+  {seed:5,name:"2001: A Space Odyssey"},{seed:12,name:"It’s a Wonderful Life"},
+  {seed:4,name:"One Flew Over the Cuckoo’s Nest"},{seed:13,name:"Best in Show"},
+  {seed:6,name:"The Truman Show"},{seed:11,name:"Full Metal Jacket"},
+  {seed:3,name:"Back to the Future"},{seed:14,name:"Major League"},
+  {seed:7,name:"Jaws"},{seed:10,name:"Train Dreams"},
+  {seed:2,name:"Star Wars: Episode IV – A New Hope"},{seed:15,name:"Casablanca"},
+  
+  {seed:1,name:"The Dark Knight"},{seed:16,name:"Monty Python and the Holy Grail"},
+  {seed:8,name:"Dead Poets Society"},{seed:9,name:"Coming to America"},
+  {seed:5,name:"Ferris Bueller’s Day Off"},{seed:12,name:"A League of Their Own"},
+  {seed:4,name:"Raiders of the Lost Ark"},{seed:13,name:"Moonrise Kingdom"},
+  {seed:6,name:"The Breakfast Club"},{seed:11,name:"Cool Hand Luke"},
+  {seed:3,name:"Whiplash"},{seed:14,name:"Harry Potter and the Deathly Hallows – Part 2"},
+  {seed:7,name:"The Karate Kid"},{seed:10,name:"National Lampoon’s Vacation"},
+  {seed:2,name:"Good Will Hunting"},{seed:15,name:"This Is Spinal Tap"},
+  
+  {seed:1,name:"Pulp Fiction"},{seed:16,name:"Caddyshack"},
+  {seed:8,name:"Ghostbusters"},{seed:9,name:"Avengers: Infinity War"},
+  {seed:5,name:"La La Land"},{seed:12,name:"Catch Me If You Can"},
+  {seed:4,name:"The Princess Bride"},{seed:13,name:"Field of Dreams"},
+  {seed:6,name:"Inception"},{seed:11,name:"Rounders"},
+  {seed:3,name:"The Usual Suspects"},{seed:14,name:"WarGames"},
+  {seed:7,name:"Spider-Man: Across the Spider-Verse"},{seed:10,name:"One Flew Over the Cuckoo’s Nest"},
+  {seed:2,name:"Se7en"},{seed:15,name:"Stranger Than Fiction"}
+];
+
+// State
+let rounds = [];
+rounds.push([]);
+for(let i=0;i<initialMovies.length;i+=2){
+  rounds[0].push([initialMovies[i],initialMovies[i+1]]);
+}
+
+// Render function
+function renderBracket(){
+  const bracketDiv = document.getElementById("bracket");
+  bracketDiv.innerHTML = "";
+  rounds.forEach((round,i)=>{
+    const roundDiv = document.createElement("div");
+    roundDiv.className = "round";
+    roundDiv.innerHTML = `<h3>Round ${i+1}</h3>`;
+    round.forEach((matchup,j)=>{
+      const matchDiv = document.createElement("div");
+      matchDiv.className = "matchup";
+      matchup.forEach((movie,k)=>{
+        if(movie){
+          const btn = document.createElement("button");
+          btn.innerHTML=`<span class="seed">(${movie.seed})</span>${movie.name}`;
+          btn.onclick = ()=> selectWinner(i,j,k);
+          matchDiv.appendChild(btn);
+        }
+      });
+      roundDiv.appendChild(matchDiv);
+    });
+    bracketDiv.appendChild(roundDiv);
+  });
+}
+
+// Select winner function
+function selectWinner(roundIndex,matchIndex,choiceIndex){
+  const winner = rounds[roundIndex][matchIndex][choiceIndex];
+  if(rounds.length <= roundIndex+1) rounds.push([]);
+  const nextPos = Math.floor(matchIndex/2);
+  if(!rounds[roundIndex+1][nextPos]) rounds[roundIndex+1][nextPos] = [null,null];
+  const slot = matchIndex%2;
+  rounds[roundIndex+1][nextPos][slot] = winner;
+  renderBracket();
+
+  const lastRound = rounds[rounds.length-1];
+  if(lastRound.length===1 && lastRound[0][0] && !lastRound[0][1]){
+    document.getElementById("champion").innerText = `🏆 Champion: ${lastRound[0][0].name}`;
+  }
+}
+
+// Initial render
+renderBracket();
+</script>
+</body>
+</html>
