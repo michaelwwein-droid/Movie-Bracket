@@ -9,7 +9,7 @@
   h1, h2 { text-align:center; }
   .bracket { display:flex; flex-wrap:wrap; justify-content:center; }
   .region { margin:10px; }
-  .matchup { background:#fff; border:1px solid #ccc; margin:5px; padding:5px; width:220px; text-align:center; }
+  .matchup { background:#fff; border:1px solid #ccc; margin:5px; padding:5px; width:240px; text-align:center; }
   .seed { font-weight:bold; color:#555; margin-right:5px; }
   button { width:90%; margin:3px 0; padding:5px; }
 </style>
@@ -21,7 +21,7 @@
 
 <script>
 // ------------------- BRACKET DATA -------------------
-let regions = {
+const regionsData = {
   "Region 1":[
     [{seed:1,name:"The Godfather"},{seed:16,name:"Groundhog Day"}],
     [{seed:8,name:"Dr. Strangelove"},{seed:9,name:"The Truman Show"}],
@@ -54,90 +54,103 @@ let regions = {
   ]
 };
 
-// ------------------- STATE -------------------
-let currentRegions = JSON.parse(JSON.stringify(regions)); // deep copy
-let nextRoundRegions = {};
-let roundNumber = 1;
+// ------------------- HELPER FUNCTIONS -------------------
 
-// ------------------- RENDER FUNCTION -------------------
-function renderBracket() {
+// Convert raw region data into matchups with IDs
+function buildMatchups(region) {
+  return region.map((pair,i)=>({
+    id: regionName+"_"+i+"_"+Math.random().toString(36).substr(2,5),
+    movies: pair,
+    winner: null
+  }));
+}
+
+// ------------------- STATE -------------------
+let regions = {};
+for (let regionName in regionsData){
+  regions[regionName] = buildMatchups(regionsData[regionName]);
+}
+
+let finalMatch = null;
+
+// ------------------- RENDER -------------------
+function renderBracket(){
   const container = document.getElementById("bracket");
   container.innerHTML = "";
-  
-  for (let regionName in currentRegions){
+
+  for (let regionName in regions){
     const regionDiv = document.createElement("div");
     regionDiv.className = "region";
     regionDiv.innerHTML = `<h2>${regionName}</h2>`;
-    
-    currentRegions[regionName].forEach((matchup, i) => {
+
+    regions[regionName].forEach(matchup=>{
+      if(matchup.winner) return; // already decided
+      
       const div = document.createElement("div");
       div.className = "matchup";
-      
-      // show both movies as buttons
-      matchup.forEach((movie, idx) => {
+
+      matchup.movies.forEach((movie,i)=>{
         const btn = document.createElement("button");
-        btn.innerHTML = `<span class="seed">(${movie.seed})</span>${movie.name}`;
-        btn.onclick = () => selectWinner(regionName, i, idx);
+        btn.innerHTML=`<span class="seed">(${movie.seed})</span>${movie.name}`;
+        btn.onclick = ()=> selectWinner(regionName, matchup.id, movie);
         div.appendChild(btn);
         div.appendChild(document.createElement("br"));
       });
+
       regionDiv.appendChild(div);
     });
-    
+
     container.appendChild(regionDiv);
   }
-}
 
-// ------------------- WINNER FUNCTION -------------------
-function selectWinner(regionName, matchupIndex, winnerIndex){
-  const winner = currentRegions[regionName][matchupIndex][winnerIndex];
-  
-  // Store winner in next round
-  if(!nextRoundRegions[regionName]) nextRoundRegions[regionName] = [];
-  nextRoundRegions[regionName].push(winner);
-  
-  // Remove the selected matchup entirely
-  currentRegions[regionName][matchupIndex] = null;
-  
-  // Check if all matchups are done in the current round
-  let allDone = currentRegions[regionName].every(m => m===null);
-  
-  if(allDone){
-    // Build next round
-    let nextRound = [];
-    for(let i=0;i<nextRoundRegions[regionName].length;i+=2){
-      if(nextRoundRegions[regionName][i+1])
-        nextRound.push([nextRoundRegions[regionName][i], nextRoundRegions[regionName][i+1]]);
-    }
-    currentRegions[regionName] = nextRound;
-    nextRoundRegions[regionName] = [];
-  }
-  
-  // Check if only one matchup left overall → finals
-  let totalMatchups = 0;
-  for(let r in currentRegions){
-    totalMatchups += currentRegions[r].length;
-  }
-  
-  if(totalMatchups === 1){
-    // Final
-    const finalRegion = Object.keys(currentRegions).find(r=>currentRegions[r].length>0);
-    const finalMatch = currentRegions[finalRegion][0];
-    
-    const container = document.getElementById("bracket");
+  // Final round display
+  if(finalMatch){
     container.innerHTML = "<h2>Final Round</h2>";
-    
-    finalMatch.forEach(m=>{
+    finalMatch.forEach(movie=>{
       const btn = document.createElement("button");
-      btn.innerHTML = `<span class="seed">(${m.seed})</span>${m.name}`;
-      btn.onclick = ()=> container.innerHTML = `<h1>🏆 Champion: ${m.name}</h1>`;
+      btn.innerHTML=`<span class="seed">(${movie.seed})</span>${movie.name}`;
+      btn.onclick = ()=> container.innerHTML=`<h1>🏆 Champion: ${movie.name}</h1>`;
       container.appendChild(btn);
       container.appendChild(document.createElement("br"));
     });
-  } else {
-    // Render updated bracket
-    renderBracket();
   }
+}
+
+// ------------------- SELECT WINNER -------------------
+function selectWinner(regionName, matchupId, movie){
+  const region = regions[regionName];
+  const matchup = region.find(m=>m.id===matchupId);
+  matchup.winner = movie; // mark winner
+
+  // Check if round finished → build next round
+  const undecided = region.filter(m=>!m.winner);
+  if(undecided.length === 0){
+    // all winners decided → build next round
+    let winners = region.map(m=>m.winner);
+    if(winners.length===1){
+      // single winner? move to finals
+      finalMatch = winners;
+      renderBracket();
+      return;
+    }
+    // pair winners for next round
+    const nextRound = [];
+    for(let i=0;i<winners.length;i+=2){
+      if(winners[i+1]) nextRound.push({
+        id: regionName+"_"+Math.random().toString(36).substr(2,5),
+        movies: [winners[i], winners[i+1]],
+        winner: null
+      });
+      else nextRound.push({
+        id: regionName+"_"+Math.random().toString(36).substr(2,5),
+        movies: [winners[i]],
+        winner: winners[i]
+      });
+    }
+    regions[regionName] = nextRound;
+  }
+
+  renderBracket();
 }
 
 // ------------------- INITIAL RENDER -------------------
