@@ -1,180 +1,137 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Movie Madness Bracket with Seeds</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f4f4;
-            padding: 20px;
-        }
-
-        h1 {
-            text-align: center;
-        }
-
-        .bracket {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .region {
-            margin: 10px;
-        }
-
-        .matchup {
-            background: #fff;
-            border: 1px solid #ccc;
-            margin: 5px;
-            padding: 5px;
-            width: 220px;
-            text-align: center;
-        }
-
-        .seed {
-            font-weight: bold;
-            color: #555;
-            margin-right: 5px;
-        }
-
-        button {
-            width: 90%;
-            margin: 3px 0;
-            padding: 5px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Movie Madness Bracket Fixed</title>
+<style>
+  body { font-family: Arial, sans-serif; background:#f4f4f4; padding:20px; }
+  h1 { text-align:center; }
+  .bracket { display:flex; flex-wrap:wrap; justify-content:center; }
+  .region { margin:10px; }
+  .matchup { background:#fff; border:1px solid #ccc; margin:5px; padding:5px; width:220px; text-align:center; }
+  .seed { font-weight:bold; color:#555; margin-right:5px; }
+  button { width:90%; margin:3px 0; padding:5px; }
+</style>
 </head>
-
 <body>
 
-    <h1>Movie Madness Bracket</h1>
-    <div id="bracket" class="bracket"></div>
+<h1>Movie Madness Bracket</h1>
+<div id="bracket" class="bracket"></div>
 
-    <script>
-        // ------------------- 64-MOVIE BRACKET WITH SEEDS -------------------
-        let regions = {
-            "Region 1": [
-                [{ seed: 1, name: "The Godfather" }, { seed: 16, name: "Groundhog Day" }],
-                [{ seed: 8, name: "Dr. Strangelove" }, { seed: 9, name: "The Truman Show" }],
-                [{ seed: 5, name: "2001: A Space Odyssey" }, { seed: 12, name: "It’s a Wonderful Life" }],
-                [{ seed: 4, name: "One Flew Over the Cuckoo’s Nest" }, { seed: 13, name: "Best in Show" }],
-                [{ seed: 6, name: "The Truman Show" }, { seed: 11, name: "Full Metal Jacket" }],
-                [{ seed: 3, name: "Back to the Future" }, { seed: 14, name: "Major League" }],
-                [{ seed: 7, name: "Jaws" }, { seed: 10, name: "Train Dreams" }],
-                [{ seed: 2, name: "Star Wars: Episode IV – A New Hope" }, { seed: 15, name: "Casablanca" }]
-            ],
-            "Region 2": [
-                [{ seed: 1, name: "The Dark Knight" }, { seed: 16, name: "Monty Python and the Holy Grail" }],
-                [{ seed: 8, name: "Dead Poets Society" }, { seed: 9, name: "Coming to America" }],
-                [{ seed: 5, name: "Ferris Bueller’s Day Off" }, { seed: 12, name: "A League of Their Own" }],
-                [{ seed: 4, name: "Raiders of the Lost Ark" }, { seed: 13, name: "Moonrise Kingdom" }],
-                [{ seed: 6, name: "The Breakfast Club" }, { seed: 11, name: "Cool Hand Luke" }],
-                [{ seed: 3, name: "Whiplash" }, { seed: 14, name: "Harry Potter and the Deathly Hallows – Part 2" }],
-                [{ seed: 7, name: "The Karate Kid" }, { seed: 10, name: "National Lampoon’s Vacation" }],
-                [{ seed: 2, name: "Good Will Hunting" }, { seed: 15, name: "This Is Spinal Tap" }]
-            ],
-            "Region 3": [
-                [{ seed: 1, name: "Pulp Fiction" }, { seed: 16, name: "Caddyshack" }],
-                [{ seed: 8, name: "Ghostbusters" }, { seed: 9, name: "Avengers: Infinity War" }],
-                [{ seed: 5, name: "La La Land" }, { seed: 12, name: "Catch Me If You Can" }],
-                [{ seed: 4, name: "The Princess Bride" }, { seed: 13, name: "Field of Dreams" }],
-                [{ seed: 6, name: "Inception" }, { seed: 11, name: "Rounders" }],
-                [{ seed: 3, name: "The Usual Suspects" }, { seed: 14, name: "WarGames" }],
-                [{ seed: 7, name: "Spider-Man: Across the Spider-Verse" }, { seed: 10, name: "One Flew Over the Cuckoo’s Nest" }],
-                [{ seed: 2, name: "Se7en" }, { seed: 15, name: "Stranger Than Fiction" }]
-            ]
-        };
+<script>
+// ------------------- BRACKET DATA -------------------
+let regions = {
+  "Region 1":[
+    [{seed:1,name:"The Godfather"},{seed:16,name:"Groundhog Day"}],
+    [{seed:8,name:"Dr. Strangelove"},{seed:9,name:"The Truman Show"}],
+    [{seed:5,name:"2001: A Space Odyssey"},{seed:12,name:"It’s a Wonderful Life"}],
+    [{seed:4,name:"One Flew Over the Cuckoo’s Nest"},{seed:13,name:"Best in Show"}],
+    [{seed:6,name:"The Truman Show"},{seed:11,name:"Full Metal Jacket"}],
+    [{seed:3,name:"Back to the Future"},{seed:14,name:"Major League"}],
+    [{seed:7,name:"Jaws"},{seed:10,name:"Train Dreams"}],
+    [{seed:2,name:"Star Wars: Episode IV – A New Hope"},{seed:15,name:"Casablanca"}]
+  ],
+  "Region 2":[
+    [{seed:1,name:"The Dark Knight"},{seed:16,name:"Monty Python and the Holy Grail"}],
+    [{seed:8,name:"Dead Poets Society"},{seed:9,name:"Coming to America"}],
+    [{seed:5,name:"Ferris Bueller’s Day Off"},{seed:12,name:"A League of Their Own"}],
+    [{seed:4,name:"Raiders of the Lost Ark"},{seed:13,name:"Moonrise Kingdom"}],
+    [{seed:6,name:"The Breakfast Club"},{seed:11,name:"Cool Hand Luke"}],
+    [{seed:3,name:"Whiplash"},{seed:14,name:"Harry Potter and the Deathly Hallows – Part 2"}],
+    [{seed:7,name:"The Karate Kid"},{seed:10,name:"National Lampoon’s Vacation"}],
+    [{seed:2,name:"Good Will Hunting"},{seed:15,name:"This Is Spinal Tap"}]
+  ],
+  "Region 3":[
+    [{seed:1,name:"Pulp Fiction"},{seed:16,name:"Caddyshack"}],
+    [{seed:8,name:"Ghostbusters"},{seed:9,name:"Avengers: Infinity War"}],
+    [{seed:5,name:"La La Land"},{seed:12,name:"Catch Me If You Can"}],
+    [{seed:4,name:"The Princess Bride"},{seed:13,name:"Field of Dreams"}],
+    [{seed:6,name:"Inception"},{seed:11,name:"Rounders"}],
+    [{seed:3,name:"The Usual Suspects"},{seed:14,name:"WarGames"}],
+    [{seed:7,name:"Spider-Man: Across the Spider-Verse"},{seed:10,name:"One Flew Over the Cuckoo’s Nest"}],
+    [{seed:2,name:"Se7en"},{seed:15,name:"Stranger Than Fiction"}]
+  ]
+};
 
-        // ------------------- STATE -------------------
-        let currentRegions = JSON.parse(JSON.stringify(regions)); // deep copy
-        let nextRegions = {};
-        let roundNumber = 1;
+// ------------------- STATE -------------------
+let currentRegions = JSON.parse(JSON.stringify(regions)); // deep copy
+let roundNumber = 1;
 
-        // ------------------- RENDER FUNCTION -------------------
-        function renderBracket() {
-            const container = document.getElementById("bracket");
-            container.innerHTML = "";
-            for (let regionName in currentRegions) {
-                const regionDiv = document.createElement("div");
-                regionDiv.className = "region";
-                regionDiv.innerHTML = `<h2>${regionName}</h2>`;
-
-                currentRegions[regionName].forEach((matchup, index) => {
-                    const div = document.createElement("div");
-                    div.className = "matchup";
-                    div.innerHTML = `
-        <button onclick="selectWinner('${regionName}',${index},0)">
-          <span class="seed">(${matchup[0].seed})</span>${matchup[0].name}
-        </button><br>
-        <button onclick="selectWinner('${regionName}',${index},1)">
-          <span class="seed">(${matchup[1].seed})</span>${matchup[1].name}
+// ------------------- RENDER FUNCTION -------------------
+function renderBracket() {
+  const container = document.getElementById("bracket");
+  container.innerHTML = "";
+  for (let regionName in currentRegions){
+    const regionDiv = document.createElement("div");
+    regionDiv.className = "region";
+    regionDiv.innerHTML = `<h2>${regionName}</h2>`;
+    
+    currentRegions[regionName].forEach((matchup,index)=>{
+      const div = document.createElement("div");
+      div.className = "matchup";
+      div.innerHTML = matchup.map((movie,i)=>`
+        <button onclick="selectWinner('${regionName}',${index},${i})">
+          <span class="seed">(${movie.seed})</span>${movie.name}
         </button>
-      `;
-                    regionDiv.appendChild(div);
-                });
+      `).join('<br>');
+      regionDiv.appendChild(div);
+    });
+    
+    container.appendChild(regionDiv);
+  }
+}
 
-                container.appendChild(regionDiv);
-            }
-        }
+// ------------------- WINNER FUNCTION -------------------
+function selectWinner(region,index,winnerIndex){
+  const winner = currentRegions[region][index][winnerIndex];
+  
+  // Prepare next round
+  if(!currentRegions[region+"_next"]) currentRegions[region+"_next"]=[];
+  currentRegions[region+"_next"].push(winner);
+  
+  // Remove the entire matchup after selection
+  currentRegions[region][index] = null;
+  
+  // Check if all matchups are done in the round
+  let done = currentRegions[region].every(m => m === null);
+  if(done){
+    // Build next round
+    let nextRound=[];
+    for(let i=0;i<currentRegions[region+"_next"].length;i+=2){
+      if(currentRegions[region+"_next"][i+1])
+        nextRound.push([currentRegions[region+"_next"][i],currentRegions[region+"_next"][i+1]]);
+    }
+    currentRegions[region] = nextRound;
+    currentRegions[region+"_next"]=[];
+  }
+  
+  // Check if all regions are down to 1 matchup → final
+  let totalMatchups=0;
+  for(let r in currentRegions){
+    if(!r.endsWith("_next"))
+      totalMatchups+=currentRegions[r].length;
+  }
+  if(totalMatchups===1){
+    // Final round
+    let finalRegion = Object.keys(currentRegions).find(r=>currentRegions[r].length>0 && !r.endsWith("_next"));
+    const finalMatch = currentRegions[finalRegion][0];
+    document.getElementById("bracket").innerHTML="<h2>Final Round</h2>";
+    finalMatch.forEach(m=>{
+      const btn = document.createElement("button");
+      btn.innerHTML=`<span class="seed">(${m.seed})</span>${m.name}`;
+      btn.onclick = () => {
+        document.getElementById("bracket").innerHTML=`<h1>🏆 Champion: ${m.name}</h1>`;
+      };
+      document.getElementById("bracket").appendChild(btn);
+    });
+  } else {
+    renderBracket();
+  }
+}
 
-        // ------------------- WINNER FUNCTION -------------------
-        function selectWinner(region, index, winnerIndex) {
-            if (!nextRegions[region]) nextRegions[region] = [];
-            nextRegions[region].push(currentRegions[region][index][winnerIndex]);
-
-            const regionDivs = document.querySelectorAll(".region");
-            regionDivs[Object.keys(currentRegions).indexOf(region)].children[index + 1].remove();
-
-            // Check if all matchups in this region are done
-            let allDone = true;
-            for (let r in currentRegions) {
-                if (nextRegions[r].length < currentRegions[r].length) allDone = false;
-            }
-
-            // If all done, prepare next round
-            if (allDone) {
-                let newRegions = {};
-                for (let r in nextRegions) {
-                    newRegions[r] = [];
-                    for (let i = 0; i < nextRegions[r].length; i += 2) {
-                        if (nextRegions[r][i + 1])
-                            newRegions[r].push([nextRegions[r][i], nextRegions[r][i + 1]]);
-                    }
-                }
-
-                // If only one matchup left across all regions → finals
-                let totalMatchups = 0;
-                for (let r in newRegions) totalMatchups += newRegions[r].length;
-                if (totalMatchups === 1) {
-                    document.getElementById("bracket").innerHTML = "<h2>Final Round</h2>";
-                    for (let r in newRegions) {
-                        newRegions[r][0].forEach((m, i) => {
-                            const btn = document.createElement("button");
-                            btn.innerHTML = `<span class="seed">(${m.seed})</span>${m.name}`;
-                            btn.onclick = () => declareWinner(m.name);
-                            document.getElementById("bracket").appendChild(btn);
-                        });
-                    }
-                } else {
-                    currentRegions = newRegions;
-                    nextRegions = {};
-                    roundNumber++;
-                    renderBracket();
-                }
-            }
-        }
-
-        function declareWinner(winner) {
-            document.getElementById("bracket").innerHTML = `<h1>🏆 Champion: ${winner}</h1>`;
-        }
-
-        // ------------------- INITIAL RENDER -------------------
-        renderBracket();
-    </script>
+// ------------------- INITIAL RENDER -------------------
+renderBracket();
+</script>
 </body>
-
 </html>
